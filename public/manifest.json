@@ -1,0 +1,32 @@
+{
+  "name": "Convertmyfiles — Universal File Converter",
+  "short_name": "Convertmyfiles",
+  "description": "Convert images, documents, and more. Fast, private, and free. No upload required.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#18181b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "100x100",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "orientation": "portrait",
+  "lang": "en",
+  "scope": "/"
+}

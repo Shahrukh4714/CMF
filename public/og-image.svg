@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#FAFAF9"/>
+  <rect x="540" y="40" width="120" height="120" rx="24" fill="#09090b"/>
+  <text x="600" y="122" text-anchor="middle" font-family="system-ui, sans-serif" font-size="72" font-weight="700" fill="white">C</text>
+  <text x="600" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="64" font-weight="700" fill="#09090b" letter-spacing="-2">Convert anything.</text>
+  <text x="600" y="360" text-anchor="middle" font-family="system-ui, sans-serif" font-size="64" font-weight="700" fill="#71717a" letter-spacing="-2">Instantly. Privately.</text>
+  <text x="600" y="440" text-anchor="middle" font-family="system-ui, sans-serif" font-size="24" fill="#71717a">Universal file converter · 100% browser-based · No upload required</text>
+</svg>
