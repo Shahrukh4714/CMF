@@ -319,23 +319,53 @@ export function HomeConverter() {
           display: "flex", 
           alignItems: "center", 
           justifyContent: "space-between", 
-          padding: "10px 18px", 
+          padding: "12px 20px", 
           background: "var(--bg2)", 
           borderBottom: "1px solid var(--border)"
         }}>
-          <span style={{ fontFamily: "var(--font-dm-mono), monospace", fontSize: 11.5, color: "var(--ink3)", fontWeight: 555 }}>
-            {rem === 0 ? "0 / " + MAX_FREE + " conversions remaining — Go Premium" : rem + " / " + MAX_FREE + " free conversions remaining"}
-          </span>
-          <div style={{ display: "flex", gap: 5 }}>
-            {Array.from({ length: Math.min(MAX_FREE, 10) }).map((_, i) => (
-              <div key={i} style={{ 
-                width: 7, 
-                height: 7, 
-                borderRadius: "50%", 
-                background: i < used ? "#5D5FEF" : "var(--border)", 
-                transition: "background 0.2s" 
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ 
+              fontFamily: "var(--font-dm-sans), sans-serif", 
+              fontSize: 12.5, 
+              color: "var(--ink)", 
+              fontWeight: 600,
+              letterSpacing: "-0.2px"
+            }}>
+              {rem === 0 ? "No free conversions left" : `${rem} free conversions remaining`}
+            </span>
+            <span style={{
+              fontFamily: "var(--font-dm-mono), monospace",
+              fontSize: 10,
+              fontWeight: 700,
+              color: "white",
+              background: rem < 10 ? "var(--accent)" : "#5D5FEF",
+              padding: "2px 6.5px",
+              borderRadius: 6,
+              letterSpacing: "0.02em",
+              lineHeight: 1.2
+            }}>
+              {rem} / {MAX_FREE}
+            </span>
+          </div>
+          
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 11, color: "var(--ink3)", fontWeight: 550, fontFamily: "var(--font-dm-sans), sans-serif" }}>Usage</span>
+            <div style={{ 
+              width: 80, 
+              height: 6, 
+              borderRadius: 3, 
+              background: "var(--border)", 
+              overflow: "hidden", 
+              position: "relative" 
+            }}>
+              <div style={{ 
+                width: `${(used / MAX_FREE) * 100}%`, 
+                height: "100%", 
+                background: "linear-gradient(90deg, #5D5FEF 0%, #8B5CF6 100%)", 
+                borderRadius: 3,
+                transition: "width 0.3s ease" 
               }} />
-            ))}
+            </div>
           </div>
         </div>
 
@@ -357,45 +387,95 @@ export function HomeConverter() {
               flexDirection: "column", 
               alignItems: "center", 
               justifyContent: "center", 
-              padding: "32px 20px", 
+              padding: "48px 24px", 
               cursor: "pointer", 
-              minHeight: 200, 
+              minHeight: 220, 
               background: dragOver ? "var(--accentbg)" : "var(--card)", 
-              transition: "background 0.2s ease, border-color 0.2s ease" 
+              transition: "all 0.2s ease",
+              position: "relative"
             }}
           >
+            {/* Background decorative target rings */}
+            <div style={{
+              position: "absolute",
+              width: 140,
+              height: 140,
+              borderRadius: "50%",
+              border: "1px dashed var(--border)",
+              opacity: dragOver ? 0.35 : 0.15,
+              pointerEvents: "none",
+              transition: "transform 0.4s ease, opacity 0.2s",
+              transform: dragOver ? "scale(1.15)" : "scale(1)"
+            }} />
+            <div style={{
+              position: "absolute",
+              width: 90,
+              height: 90,
+              borderRadius: "50%",
+              border: "1px solid var(--border)",
+              opacity: dragOver ? 0.45 : 0.25,
+              pointerEvents: "none",
+              transition: "transform 0.4s ease, opacity 0.2s",
+              transform: dragOver ? "scale(1.08)" : "scale(1)"
+            }} />
+
+            {/* Glowing Upload Circle Icon */}
             <div style={{ 
               position: "relative",
               zIndex: 1,
-              width: 52, 
-              height: 52, 
+              width: 54, 
+              height: 54, 
               borderRadius: "50%", 
-              border: "2px dashed", 
-              borderColor: dragOver ? "#5D5FEF" : "var(--border)", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center", 
-              marginBottom: 12, 
-              background: "var(--bg2)", 
+              marginBottom: 16, 
+              background: dragOver ? "var(--accentbg)" : "var(--bg3)", 
+              boxShadow: dragOver ? "0 0 15px rgba(93, 95, 239, 0.15)" : "0 4px 10px rgba(0,0,0,0.03)",
+              border: `1px solid ${dragOver ? "#5D5FEF" : "var(--border)"}`,
               transition: "all 0.2s ease", 
-              color: dragOver ? "#5D5FEF" : "var(--ink3)" 
+              color: dragOver ? "#5D5FEF" : "var(--ink2)" 
             }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: dragOver ? "translateY(-2px)" : "none", transition: "transform 0.2s" }}>
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
             </div>
-            <div style={{ position: "relative", zIndex: 1, fontSize: 17, fontWeight: 700, color: "var(--ink)", marginBottom: 6, letterSpacing: "-0.3px" }}>
+
+            <div style={{ position: "relative", zIndex: 1, fontSize: 17, fontWeight: 700, color: "var(--ink)", marginBottom: 6, letterSpacing: "-0.4px", fontFamily: "var(--font-dm-sans), sans-serif" }}>
               Click, or drop your files here
             </div>
-            <div style={{ position: "relative", zIndex: 1, fontSize: 13, color: "var(--ink3)", marginBottom: 16, textAlign: "center", maxWidth: 360 }}>
+            
+            <div style={{ position: "relative", zIndex: 1, fontSize: 13, color: "var(--ink3)", marginBottom: 20, textAlign: "center", maxWidth: 360, lineHeight: 1.55, fontFamily: "var(--font-dm-sans), sans-serif" }}>
               Convert images, videos, audio, documents, spreadsheets, ebooks &amp; presentation formats safely in your browser.
             </div>
+
             <button 
               className="btn-primary" 
               onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-              style={{ position: "relative", zIndex: 1, background: "#5D5FEF", border: "none", color: "white", padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}
+              style={{ 
+                position: "relative", 
+                zIndex: 1, 
+                background: "linear-gradient(135deg, #5D5FEF 0%, #4749D6 100%)", 
+                border: "none", 
+                color: "white", 
+                padding: "9px 24px", 
+                borderRadius: 9, 
+                fontSize: 13, 
+                fontWeight: 600,
+                boxShadow: "0 4px 14px rgba(93, 95, 239, 0.3)",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.025)";
+                e.currentTarget.style.boxShadow = "0 6px 18px rgba(93, 95, 239, 0.42)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 4px 14px rgba(93, 95, 239, 0.3)";
+              }}
             >
               Select files
             </button>
@@ -407,8 +487,8 @@ export function HomeConverter() {
               onChange={(e) => { if (e.target.files) addFiles(e.target.files); }} 
             />
           </div>
-
         )}
+
 
 
 
