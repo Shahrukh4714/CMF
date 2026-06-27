@@ -670,6 +670,12 @@ export function getAllTools(): ToolDefinition[] {
   return allTools;
 }
 
+export function getCuratedTools(): ToolDefinition[] {
+  const curatedSlugs = new Set(registryEntries.map(e => e.slug));
+  return allTools.filter(t => curatedSlugs.has(t.slug));
+}
+
+
 export function getPopularTools(limit?: number): ToolDefinition[] {
   const popular = allTools.filter((t) => t.popular && !t.comingSoon);
   return limit ? popular.slice(0, limit) : popular;

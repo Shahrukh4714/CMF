@@ -24,6 +24,7 @@ export {
   URL_TO_CATEGORY,
   getTool,
   getAllTools,
+  getCuratedTools,
   getPopularTools,
   getToolsByCategory,
   getCategoryById,

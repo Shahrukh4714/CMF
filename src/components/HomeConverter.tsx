@@ -313,43 +313,38 @@ export function HomeConverter() {
 
   return (
     <div style={{ maxWidth: 760, width: "100%", margin: "0 auto", padding: "0 10px" }}>
-      {/* Session Progress Header */}
-      <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "space-between", 
-        padding: "10px 18px", 
-        background: "var(--bg2)", 
-        border: "1px solid var(--border)",
-        borderBottom: "none",
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12
-      }}>
-        <span style={{ fontFamily: "var(--font-dm-mono), monospace", fontSize: 11.5, color: "var(--ink3)", fontWeight: 555 }}>
-          {rem === 0 ? "0 / " + MAX_FREE + " conversions remaining — Go Premium" : rem + " / " + MAX_FREE + " free conversions remaining"}
-        </span>
-        <div style={{ display: "flex", gap: 5 }}>
-          {Array.from({ length: Math.min(MAX_FREE, 10) }).map((_, i) => (
-            <div key={i} style={{ 
-              width: 7, 
-              height: 7, 
-              borderRadius: "50%", 
-              background: i < used ? "#5D5FEF" : "var(--border)", 
-              transition: "background 0.2s" 
-            }} />
-          ))}
+      <div className="converter-card-container" style={{ borderRadius: 12, overflow: "hidden" }}>
+        {/* Session Progress Header */}
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "space-between", 
+          padding: "10px 18px", 
+          background: "var(--bg2)", 
+          borderBottom: "1px solid var(--border)"
+        }}>
+          <span style={{ fontFamily: "var(--font-dm-mono), monospace", fontSize: 11.5, color: "var(--ink3)", fontWeight: 555 }}>
+            {rem === 0 ? "0 / " + MAX_FREE + " conversions remaining — Go Premium" : rem + " / " + MAX_FREE + " free conversions remaining"}
+          </span>
+          <div style={{ display: "flex", gap: 5 }}>
+            {Array.from({ length: Math.min(MAX_FREE, 10) }).map((_, i) => (
+              <div key={i} style={{ 
+                width: 7, 
+                height: 7, 
+                borderRadius: "50%", 
+                background: i < used ? "#5D5FEF" : "var(--border)", 
+                transition: "background 0.2s" 
+              }} />
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Converter Content */}
-      <div style={{
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        borderBottomLeftRadius: 12,
-        borderBottomRightRadius: 12,
-        boxShadow: "var(--shadow-sm)",
-        overflow: "hidden"
-      }}>
+        {/* Converter Content */}
+        <div style={{
+          background: "var(--card)",
+          overflow: "hidden"
+        }}>
+
         {/* Dropzone State */}
         {!hasConversions && (
           <div 
@@ -362,43 +357,45 @@ export function HomeConverter() {
               flexDirection: "column", 
               alignItems: "center", 
               justifyContent: "center", 
-              padding: "60px 40px", 
+              padding: "32px 20px", 
               cursor: "pointer", 
-              minHeight: 280, 
-              background: dragOver ? "var(--accentbg)" : "transparent", 
+              minHeight: 200, 
+              background: dragOver ? "var(--accentbg)" : "var(--card)", 
               transition: "background 0.2s ease, border-color 0.2s ease" 
             }}
           >
             <div style={{ 
-              width: 72, 
-              height: 72, 
+              position: "relative",
+              zIndex: 1,
+              width: 52, 
+              height: 52, 
               borderRadius: "50%", 
               border: "2px dashed", 
               borderColor: dragOver ? "#5D5FEF" : "var(--border)", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center", 
-              marginBottom: 20, 
+              marginBottom: 12, 
               background: "var(--bg2)", 
               transition: "all 0.2s ease", 
               color: dragOver ? "#5D5FEF" : "var(--ink3)" 
             }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)", marginBottom: 8, letterSpacing: "-0.3px" }}>
+            <div style={{ position: "relative", zIndex: 1, fontSize: 17, fontWeight: 700, color: "var(--ink)", marginBottom: 6, letterSpacing: "-0.3px" }}>
               Click, or drop your files here
             </div>
-            <div style={{ fontSize: 13.5, color: "var(--ink3)", marginBottom: 24, textAlign: "center", maxWidth: 360 }}>
+            <div style={{ position: "relative", zIndex: 1, fontSize: 13, color: "var(--ink3)", marginBottom: 16, textAlign: "center", maxWidth: 360 }}>
               Convert images, videos, audio, documents, spreadsheets, ebooks &amp; presentation formats safely in your browser.
             </div>
             <button 
               className="btn-primary" 
               onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-              style={{ background: "#5D5FEF", border: "none", color: "white", padding: "10px 24px", borderRadius: 8, fontSize: 13.5, fontWeight: 600 }}
+              style={{ position: "relative", zIndex: 1, background: "#5D5FEF", border: "none", color: "white", padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}
             >
               Select files
             </button>
@@ -410,7 +407,12 @@ export function HomeConverter() {
               onChange={(e) => { if (e.target.files) addFiles(e.target.files); }} 
             />
           </div>
+
         )}
+
+
+
+
 
         {/* Selected Files State */}
         {hasConversions && (
@@ -865,8 +867,10 @@ export function HomeConverter() {
           </div>
         )}
       </div>
+      </div>
 
       <PricingModal open={showPricing} onClose={() => setShowPricing(false)} />
     </div>
   );
 }
+
