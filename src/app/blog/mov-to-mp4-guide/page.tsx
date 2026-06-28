@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "MOV to MP4 Converter Free — No Upload Needed | Convertmyfiles Blog",
     description:
       "Learn how to convert MOV files from iPhone or Mac to MP4 for free, privately, right in your browser. Your files never leave your device.",
-    url: "https://convertit.app/blog/mov-to-mp4-guide",
+    url: "https://convertmyfiles.com/blog/mov-to-mp4-guide",
     siteName: "Convertmyfiles",
     type: "article",
   },
@@ -129,7 +129,7 @@ export default function MovToMp4GuidePage() {
           {[
             {
               step: "1",
-              text: 'Open our free MOV to MP4 converter — click the button at the bottom of this article, or navigate to convertit.app.',
+              text: 'Open our free MOV to MP4 converter — click the button at the bottom of this article, or navigate to convertmyfiles.com.',
             },
             {
               step: "2",

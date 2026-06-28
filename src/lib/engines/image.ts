@@ -48,31 +48,30 @@ function getCanvas(file: File, options: ConversionOptions): Promise<HTMLCanvasEl
         w = Math.round(h / (img.naturalHeight / img.naturalWidth));
       }
 
-      canvas.width = w;
-      canvas.height = h;
+      let canvasW = w;
+      let canvasH = h;
+      let angle = 0;
+      if (options.rotate) {
+        angle = (options.rotate * Math.PI) / 180;
+        canvasW = Math.abs(Math.cos(angle)) * w + Math.abs(Math.sin(angle)) * h;
+        canvasH = Math.abs(Math.sin(angle)) * w + Math.abs(Math.cos(angle)) * h;
+      }
+
+      canvas.width = canvasW;
+      canvas.height = canvasH;
       const ctx = canvas.getContext("2d");
       if (!ctx) { reject(new Error("Could not get canvas context")); return; }
 
-      // Flip
+      ctx.translate(canvasW / 2, canvasH / 2);
+      if (options.rotate) {
+        ctx.rotate(angle);
+      }
       if (options.flip === "horizontal") {
-        ctx.translate(w, 0);
         ctx.scale(-1, 1);
       } else if (options.flip === "vertical") {
-        ctx.translate(0, h);
         ctx.scale(1, -1);
       }
-
-      // Rotation
-      if (options.rotate) {
-        const angle = (options.rotate * Math.PI) / 180;
-        canvas.width = Math.abs(Math.cos(angle)) * w + Math.abs(Math.sin(angle)) * h;
-        canvas.height = Math.abs(Math.sin(angle)) * w + Math.abs(Math.cos(angle)) * h;
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(angle);
-        ctx.drawImage(img, -w / 2, -h / 2, w, h);
-      } else {
-        ctx.drawImage(img, 0, 0, w, h);
-      }
+      ctx.drawImage(img, -w / 2, -h / 2, w, h);
 
       resolve(canvas);
     } catch (err) {

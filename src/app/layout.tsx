@@ -25,9 +25,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  // TODO: Update this URL to your production domain (e.g. https://convertmyfiles.com) before launch.
-  // All 763 SEO canonical URLs and OG links are derived from this value.
-  metadataBase: new URL("https://convertit.app"),
+  metadataBase: new URL("https://convertmyfiles.com"),
   title: {
     default: "Convertmyfiles \u2014 Convert files privately",
     template: "%s | Convertmyfiles",
@@ -39,6 +37,12 @@ export const metadata: Metadata = {
     title: "Convertmyfiles \u2014 Convert files privately",
     description: "Everything runs in your browser. No uploads, no accounts, your files never leave your device.",
     images: [{ url: "/og-image.svg", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Convertmyfiles \u2014 Convert files privately",
+    description: "Everything runs in your browser. No uploads, no accounts, your files never leave your device.",
+    images: ["/og-image.svg"],
   },
 };
 

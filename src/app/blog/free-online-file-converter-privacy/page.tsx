@@ -25,11 +25,11 @@ export default function Article() {
         </ul>
 
         <h2 className="text-lg font-bold text-heading mt-8 mb-3">The Local Processing Solution</h2>
-        <p>Convertmyfiles processes everything in your browser using WebAssembly and JavaScript libraries. Your files never leave your device. This means:</p>
+        <p>Convertmyfiles operates on a local-first hybrid model. The vast majority of conversions—including images, audio, video, and standard PDF page edits—are processed entirely inside your browser memory using WebAssembly and Javascript libraries. Your files never leave your device. This means:</p>
         <ul className="list-disc pl-5 space-y-2">
-          <li>No server upload — the file stays on your computer.</li>
-          <li>Works offline — after the page loads, you can disconnect from the internet.</li>
-          <li>No account needed — no personal information required.</li>
+          <li><strong>Local-first processing</strong> — Your audio, video, and images never touch the internet.</li>
+          <li><strong>Secure in-memory APIs</strong> — For specific document translations (like Word DOCX or EPUB conversions) that require advanced serverless layout parsers, files are sent over secure HTTPS, processed purely in-memory on transient serverless endpoints, and immediately deleted without ever being written to persistent storage.</li>
+          <li><strong>No account needed</strong> — No signup forms, logins, or tracking of any kind.</li>
         </ul>
 
         <div className="bg-warning-soft border border-border-warning-subtle rounded-base p-4 mt-8">

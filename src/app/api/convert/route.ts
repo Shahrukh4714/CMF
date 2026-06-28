@@ -2,13 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import mammoth from "mammoth";
 import * as XLSX from "xlsx";
+import { isValidConversion } from "@/lib/security";
+import { validateMimeType } from "@/lib/mime-validation";
+import DOMPurify from "isomorphic-dompurify";
+import { PDFDocument, StandardFonts } from "pdf-lib";
+import { DOMParser } from "xmldom";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB server-side limit
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Instantly check Content-Length header to reject large files before parsing
+    const contentLength = parseInt(req.headers.get("content-length") || "0", 10);
+    if (contentLength > MAX_FILE_SIZE) {
+      return NextResponse.json({
+        error: `File size exceeds the server-side limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB.`
+      }, { status: 400 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const from = formData.get("from") as string;
-    const to = formData.get("to") as string;
+    const from = formData.get("from") as string | null;
+    const to = formData.get("to") as string | null;
     const action = formData.get("action") as string | null;
     const password = formData.get("password") as string | null;
 
@@ -16,12 +31,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const base = file.name.replace(/\.[^/.]+$/, "");
+    if (!from || !to) {
+      return NextResponse.json({ error: "Missing conversion format parameters" }, { status: 400 });
+    }
 
-    let resultBuffer: Buffer;
-    let mime: string;
-    let ext: string;
+    // Enforce parameter boundaries
+    if (from.length > 10 || to.length > 10) {
+      return NextResponse.json({ error: "Format parameters must be 10 characters or less" }, { status: 400 });
+    }
+
+    // Validate conversion pair against allowlist
+    if (!isValidConversion(from, to, action)) {
+      return NextResponse.json({
+        error: `Server-side conversion from ${from.toUpperCase()} to ${to.toUpperCase()} is not supported.`
+      }, { status: 400 });
+    }
+
+    // Enforce server-side file size cap
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({
+        error: `File size exceeds the server-side limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB.`
+      }, { status: 400 });
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Validate actual file type (MIME type) against the claimed format
+    const mimeValidation = await validateMimeType(buffer, from);
+    if (!mimeValidation.isValid) {
+      return NextResponse.json({
+        error: mimeValidation.error || "File type validation failed."
+      }, { status: 400 });
+    }
+
+    let base = file.name.replace(/\.[^/.]+$/, "");
+    // Sanitize filename base to prevent header injection or unexpected path characters
+    base = base.replace(/[^a-zA-Z0-9_\-\s.]/g, "").substring(0, 100);
+    if (!base) {
+      base = "converted_file";
+    }
+
+    let resultBuffer: Buffer | null = null;
+    let mime = "";
+    let ext = "";
 
     // ── Image conversions ──
     const imageFormats = ["jpg", "jpeg", "png", "webp", "gif", "bmp", "svg", "tiff", "avif"];
@@ -30,7 +82,11 @@ export async function POST(req: NextRequest) {
       if (from === "svg") {
         // SVG → PNG/JPG via sharp
         const svgText = file.name.endsWith(".svg") ? buffer.toString("utf-8") : await file.text();
-        resultBuffer = await sharp(Buffer.from(svgText, "utf-8")).resize(800, 600, { fit: "inside" }).png().toBuffer();
+        // Sanitise SVG content to prevent XSS/XXE vulnerabilities
+        const cleanSvg = DOMPurify.sanitize(svgText, {
+          USE_PROFILES: { svg: true },
+        });
+        resultBuffer = await sharp(Buffer.from(cleanSvg, "utf-8")).png().toBuffer();
         mime = "image/png";
         ext = "png";
       } else if (to !== "svg") {
@@ -77,16 +133,7 @@ export async function POST(req: NextRequest) {
         mime = "text/html";
         ext = "html";
       } else {
-        const { jsPDF } = await import("jspdf");
-        const doc = new jsPDF();
-        const lines = doc.splitTextToSize(text, 180);
-        let y = 15;
-        lines.forEach((line: string) => {
-          if (y > 280) { doc.addPage(); y = 15; }
-          doc.text(line, 15, y);
-          y += 7;
-        });
-        resultBuffer = Buffer.from(doc.output("arraybuffer"));
+        resultBuffer = await convertTxtToPdf(text);
         mime = "application/pdf";
         ext = "pdf";
       }
@@ -107,22 +154,9 @@ export async function POST(req: NextRequest) {
         mime = "text/plain";
         ext = "txt";
       } else {
-        let html = md
-          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-          .replace(/^###### (.+)/gm, "<h6>$1</h6>")
-          .replace(/^##### (.+)/gm, "<h5>$1</h5>")
-          .replace(/^#### (.+)/gm, "<h4>$1</h4>")
-          .replace(/^### (.+)/gm, "<h3>$1</h3>")
-          .replace(/^## (.+)/gm, "<h2>$1</h2>")
-          .replace(/^# (.+)/gm, "<h1>$1</h1>")
-          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-          .replace(/\*(.+?)\*/g, "<em>$1</em>")
-          .replace(/`(.+?)`/g, "<code>$1</code>")
-          .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
-          .replace(/^- (.+)/gm, "<li>$1</li>")
-          .replace(/\n\n/g, "</p><p>")
-          .replace(/\n/g, "<br>");
-        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;max-width:760px;margin:40px auto;line-height:1.7}code{background:#f4f4f4;padding:2px 5px;border-radius:3px}</style></head><body><p>${html}</p></body></html>`;
+        const { marked } = await import("marked");
+        const parsedHtml = await marked(md);
+        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;max-width:760px;margin:40px auto;line-height:1.7}code{background:#f4f4f4;padding:2px 5px;border-radius:3px}</style></head><body>${parsedHtml}</body></html>`;
         resultBuffer = Buffer.from(full, "utf-8");
         mime = "text/html";
         ext = "html";
@@ -228,17 +262,8 @@ export async function POST(req: NextRequest) {
     }
     // ── DOCX → PDF ──
     else if (from === "docx" && to === "pdf") {
-      const result = await mammoth.extractRawText({ buffer });
-      const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF();
-      const lines = doc.splitTextToSize(result.value, 180);
-      let y = 15;
-      lines.forEach((line: string) => {
-        if (y > 280) { doc.addPage(); y = 15; }
-        doc.text(line, 15, y);
-        y += 7;
-      });
-      resultBuffer = Buffer.from(doc.output("arraybuffer"));
+      const result = await mammoth.convertToHtml({ buffer });
+      resultBuffer = await convertHtmlToPdf(result.value);
       mime = "application/pdf";
       ext = "pdf";
     }
@@ -249,21 +274,19 @@ export async function POST(req: NextRequest) {
       const result = await parser.getText();
       await parser.destroy();
       const text = result.text;
-      const { default: JSZip } = await import("jszip");
-      const zip = new JSZip();
-      const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<w:br/>");
-      const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:body>
-    <w:p><w:r><w:t>${escaped}</w:t></w:r></w:p>
-  </w:body>
-</w:document>`;
-      zip.file("word/document.xml", docXml);
-      zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
-      zip.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
-      zip.file("word/_rels/document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>`);
-      const buf = await zip.generateAsync({ type: "nodebuffer" });
-      resultBuffer = Buffer.from(buf);
+      
+      const { Document, Packer, Paragraph, TextRun } = await import("docx");
+      const lines = text.split("\n");
+      const doc = new Document({
+        sections: [
+          {
+            children: lines.map((line: string) => new Paragraph({
+              children: [new TextRun({ text: line })]
+            }))
+          }
+        ]
+      });
+      resultBuffer = await Packer.toBuffer(doc);
       mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
       ext = "docx";
     }
@@ -272,20 +295,7 @@ export async function POST(req: NextRequest) {
       const wb = XLSX.read(buffer);
       const ws = wb.Sheets[wb.SheetNames[0]];
       const data = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 }) as string[][];
-      const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF("landscape");
-      let y = 10;
-      doc.setFontSize(8);
-      for (const row of data) {
-        if (y > 190) { doc.addPage("landscape"); y = 10; }
-        let x = 5;
-        for (const cell of row) {
-          doc.text(String(cell ?? ""), x, y);
-          x += 35;
-        }
-        y += 6;
-      }
-      resultBuffer = Buffer.from(doc.output("arraybuffer"));
+      resultBuffer = await convertXlsxToPdf(data);
       mime = "application/pdf";
       ext = "pdf";
     }
@@ -308,29 +318,34 @@ export async function POST(req: NextRequest) {
     // ── EPUB → PDF ──
     else if (from === "epub" && to === "pdf") {
       const { default: EPub } = await import("epub");
-      const epub = new EPub(buffer);
-      await epub.parse();
-      const chapters: string[] = [];
-      for (const item of epub.flow) {
+      const fs = await import("node:fs/promises");
+      const path = await import("node:path");
+      const os = await import("node:os");
+
+      const tempDir = os.tmpdir();
+      const tempFilePath = path.join(tempDir, `epub-${Date.now()}-${Math.random().toString(36).substring(2)}.epub`);
+
+      try {
+        await fs.writeFile(tempFilePath, buffer);
+        const epub = new EPub(tempFilePath);
+        await epub.parse();
+        const chapters: string[] = [];
+        for (const item of epub.flow) {
+          try {
+            const content = await epub.getChapter(item.id);
+            chapters.push(content);
+          } catch { /* skip failed chapters */ }
+        }
+        const text = chapters.join("\n\n");
+        const stripped = text.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+        resultBuffer = await convertTxtToPdf(stripped);
+        mime = "application/pdf";
+        ext = "pdf";
+      } finally {
         try {
-          const content = await epub.getChapter(item.id);
-          chapters.push(content);
-        } catch { /* skip failed chapters */ }
+          await fs.unlink(tempFilePath);
+        } catch { /* ignore cleanup errors */ }
       }
-      const text = chapters.join("\n\n");
-      const stripped = text.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-      const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF();
-      const lines = doc.splitTextToSize(stripped, 180);
-      let y = 15;
-      lines.forEach((line: string) => {
-        if (y > 280) { doc.addPage(); y = 15; }
-        doc.text(line, 15, y);
-        y += 7;
-      });
-      resultBuffer = Buffer.from(doc.output("arraybuffer"));
-      mime = "application/pdf";
-      ext = "pdf";
     }
     // ── OCR: Image → TXT ──
     else if ((from === "png" || from === "jpg" || from === "jpeg" || from === "webp" || from === "tiff") && to === "txt" && action === "ocr") {
@@ -368,6 +383,10 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
+    if (!resultBuffer || !mime || !ext) {
+      return NextResponse.json({ error: "Conversion failed to generate output" }, { status: 500 });
+    }
+
     if (ext === "pdf" && password) {
       const { encryptPDF } = await import("@pdfsmaller/pdf-encrypt-lite");
       const encrypted = await encryptPDF(new Uint8Array(resultBuffer), password);
@@ -399,4 +418,301 @@ function parseCSVRow(row: string): string[] {
   }
   result.push(cur);
   return result;
+}
+
+function wrapText(text: string, maxCharsPerLine: number = 80): string[] {
+  const lines: string[] = [];
+  const paragraphs = text.split("\n");
+  for (const paragraph of paragraphs) {
+    if (paragraph.trim() === "") {
+      lines.push("");
+      continue;
+    }
+    const words = paragraph.split(/\s+/);
+    let currentLine = "";
+    for (const word of words) {
+      if ((currentLine + " " + word).trim().length <= maxCharsPerLine) {
+        currentLine = (currentLine + " " + word).trim();
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+  }
+  return lines;
+}
+
+async function convertTxtToPdf(text: string): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  
+  let page = pdfDoc.addPage([612, 792]); // Letter size
+  const margin = 50;
+  const fontSize = 10;
+  const lineHeight = 14;
+  
+  let y = 792 - margin;
+  
+  const lines = wrapText(text, 80);
+  
+  for (const line of lines) {
+    if (y < margin + lineHeight) {
+      page = pdfDoc.addPage([612, 792]);
+      y = 792 - margin;
+    }
+    if (line.trim() !== "") {
+      page.drawText(line, {
+        x: margin,
+        y: y,
+        size: fontSize,
+        font: font,
+      });
+    }
+    y -= lineHeight;
+  }
+  
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
+}
+
+async function convertXlsxToPdf(data: string[][]): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  
+  let page = pdfDoc.addPage([792, 612]); // Letter Landscape
+  const marginTop = 30;
+  const marginBottom = 30;
+  const fontSize = 8;
+  const lineHeight = 12;
+  const colWidth = 75;
+  
+  let y = 612 - marginTop;
+  
+  for (const row of data) {
+    if (y < marginBottom + lineHeight) {
+      page = pdfDoc.addPage([792, 612]);
+      y = 612 - marginTop;
+    }
+    
+    let x = 30;
+    for (const cell of row) {
+      const cellText = String(cell ?? "").trim();
+      const truncated = cellText.length > 15 ? cellText.substring(0, 12) + "..." : cellText;
+      
+      if (truncated !== "") {
+        page.drawText(truncated, {
+          x: x,
+          y: y,
+          size: fontSize,
+          font: font,
+        });
+      }
+      x += colWidth;
+      if (x > 792 - 30) break;
+    }
+    y -= lineHeight;
+  }
+  
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
+}
+interface TextSpan {
+  text: string;
+  font: any;
+  fontSize: number;
+}
+
+interface InlineToken {
+  text: string;
+  bold: boolean;
+  italic: boolean;
+}
+
+function extractTokens(node: any, bold = false, italic = false): InlineToken[] {
+  let tokens: InlineToken[] = [];
+  if (!node) return tokens;
+
+  if (node.nodeType === 3) {
+    const text = node.nodeValue || "";
+    if (text) {
+      tokens.push({ text, bold, italic });
+    }
+  } else if (node.nodeType === 1) {
+    const tagName = node.tagName.toLowerCase();
+    let newBold = bold;
+    let newItalic = italic;
+    if (tagName === "strong" || tagName === "b") newBold = true;
+    if (tagName === "em" || tagName === "i") newItalic = true;
+
+    const childNodes = node.childNodes;
+    if (childNodes) {
+      for (let i = 0; i < childNodes.length; i++) {
+        tokens = tokens.concat(extractTokens(childNodes[i], newBold, newItalic));
+      }
+    }
+  }
+  return tokens;
+}
+
+function layoutParagraph(
+  tokens: InlineToken[],
+  fontSize: number,
+  maxWidth: number,
+  fonts: { regular: any; bold: any; italic: any; boldItalic: any }
+): TextSpan[][] {
+  const lines: TextSpan[][] = [];
+  let currentLine: TextSpan[] = [];
+  let currentLineWidth = 0;
+
+  for (const token of tokens) {
+    let font = fonts.regular;
+    if (token.bold && token.italic) font = fonts.boldItalic;
+    else if (token.bold) font = fonts.bold;
+    else if (token.italic) font = fonts.italic;
+
+    const words = token.text.split(/(\s+)/);
+
+    for (const word of words) {
+      if (word === "") continue;
+
+      const wordWidth = font.widthOfTextAtSize(word, fontSize);
+
+      if (currentLineWidth + wordWidth > maxWidth && currentLineWidth > 0) {
+        lines.push(currentLine);
+        currentLine = [];
+        currentLineWidth = 0;
+        if (/^\s+$/.test(word)) continue;
+      }
+
+      currentLine.push({ text: word, font, fontSize });
+      currentLineWidth += wordWidth;
+    }
+  }
+
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
+
+  return lines;
+}
+
+function drawLine(page: any, line: TextSpan[], x: number, y: number) {
+  let currentX = x;
+  for (const span of line) {
+    page.drawText(span.text, {
+      x: currentX,
+      y: y,
+      font: span.font,
+      size: span.fontSize,
+    });
+    currentX += span.font.widthOfTextAtSize(span.text, span.fontSize);
+  }
+}
+
+async function convertHtmlToPdf(html: string): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.create();
+  const fonts = {
+    regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
+    bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
+    italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
+    boldItalic: await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique),
+  };
+
+  let page = pdfDoc.addPage([612, 792]);
+  const margin = 50;
+  const maxWidth = 612 - margin * 2;
+  let y = 792 - margin;
+
+  const parser = new DOMParser();
+  const cleanHtml = html
+    .replace(/&nbsp;/g, " ")
+    .replace(/&ldquo;/g, "\"")
+    .replace(/&rdquo;/g, "\"")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&ndash;/g, "-")
+    .replace(/&mdash;/g, "--");
+  const doc = parser.parseFromString(`<div>${cleanHtml}</div>`, "text/xml");
+  const root = doc.documentElement;
+
+  const childNodes = root.childNodes;
+  if (!childNodes) {
+    const pdfBytes = await pdfDoc.save();
+    return Buffer.from(pdfBytes);
+  }
+
+  for (let i = 0; i < childNodes.length; i++) {
+    const node = childNodes[i];
+    if (node.nodeType !== 1) continue;
+
+    const tagName = (node as any).tagName.toLowerCase();
+    let fontSize = 10;
+    let isHeading = false;
+    let spaceBefore = 8;
+    let spaceAfter = 6;
+    let isList = false;
+
+    if (tagName.match(/^h[1-6]$/)) {
+      isHeading = true;
+      const level = parseInt(tagName.charAt(1));
+      fontSize = level === 1 ? 18 : level === 2 ? 14 : 12;
+      spaceBefore = level === 1 ? 16 : 12;
+      spaceAfter = 8;
+    } else if (tagName === "p") {
+      fontSize = 10;
+      spaceBefore = 6;
+      spaceAfter = 6;
+    } else if (tagName === "ul" || tagName === "ol") {
+      isList = true;
+      spaceBefore = 6;
+      spaceAfter = 6;
+    }
+
+    if (isList) {
+      const items = (node as any).childNodes;
+      if (!items) continue;
+      for (let j = 0; j < items.length; j++) {
+        const item = items[j];
+        if (item.nodeType !== 1 || (item as any).tagName.toLowerCase() !== "li") continue;
+
+        const tokens = extractTokens(item);
+        const lines = layoutParagraph(tokens, 10, maxWidth - 20, fonts);
+
+        for (let l = 0; l < lines.length; l++) {
+          const line = lines[l];
+          const lineHeight = 14;
+          if (y < margin + lineHeight) {
+            page = pdfDoc.addPage([612, 792]);
+            y = 792 - margin;
+          }
+          if (l === 0) {
+            page.drawText("•", { x: margin + 10, y: y, font: fonts.bold, size: 10 });
+          }
+          drawLine(page, line, margin + 20, y);
+          y -= lineHeight;
+        }
+        y -= 4;
+      }
+    } else {
+      const tokens = extractTokens(node, isHeading);
+      const lines = layoutParagraph(tokens, fontSize, maxWidth, fonts);
+
+      y -= spaceBefore;
+
+      for (const line of lines) {
+        const lineHeight = fontSize + 4;
+        if (y < margin + lineHeight) {
+          page = pdfDoc.addPage([612, 792]);
+          y = 792 - margin;
+        }
+        drawLine(page, line, margin, y);
+        y -= lineHeight;
+      }
+      y -= spaceAfter;
+    }
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
 }

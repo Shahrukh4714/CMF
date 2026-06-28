@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description:
       "Learn how to convert MP4 to MP3 for free in your browser — no uploads, no sign-up. Extract audio from videos for music, podcasts, or ringtones instantly.",
     type: "article",
-    url: "https://convertit.app/blog/mp4-to-mp3-free-converter",
+    url: "https://convertmyfiles.com/blog/mp4-to-mp3-free-converter",
   },
 };
 

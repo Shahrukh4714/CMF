@@ -308,7 +308,7 @@ engineRegistry.register({
       const { encryptPDF } = await import("@pdfsmaller/pdf-encrypt-lite");
       const arrayBuffer = await result.blob.arrayBuffer();
       const encryptedBytes = await encryptPDF(new Uint8Array(arrayBuffer), options.password);
-      result.blob = new Blob([encryptedBytes as any], { type: "application/pdf" });
+      result.blob = new Blob([encryptedBytes as BlobPart], { type: "application/pdf" });
     }
 
     return result;
@@ -335,7 +335,7 @@ async function convertPdfToImage(file: File, outputFormat: "jpg" | "png"): Promi
   ctx.fillStyle = "#FFFFFF";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  await page.render({ canvasContext: ctx, viewport } as any).promise;
+  await page.render({ canvasContext: ctx, viewport } as Parameters<typeof page.render>[0]).promise;
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     const mime = outputFormat === "jpg" ? "image/jpeg" : "image/png";

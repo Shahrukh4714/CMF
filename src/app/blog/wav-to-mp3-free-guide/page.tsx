@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description:
       "Learn how to convert WAV to MP3 for free in your browser. Understand why WAV files are huge, when MP3 is better, and how to pick the right bitrate.",
     type: "article",
-    url: "https://convertit.app/blog/wav-to-mp3-free-guide",
+    url: "https://convertmyfiles.com/blog/wav-to-mp3-free-guide",
     siteName: "Convertmyfiles",
   },
 };
@@ -160,7 +160,7 @@ export default function WavToMp3Guide() {
               href="/convert/wav-to-mp3"
               className="text-fg-brand underline underline-offset-2 hover:opacity-80 transition-opacity"
             >
-              convertit.app/convert/wav-to-mp3
+              convertmyfiles.com/convert/wav-to-mp3
             </Link>
             .
           </li>

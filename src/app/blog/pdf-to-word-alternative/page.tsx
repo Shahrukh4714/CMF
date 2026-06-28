@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description:
       "Compare the best free PDF to Word converters — Google Docs, LibreOffice, and online tools — and discover why an in-browser converter beats them all.",
     type: "article",
-    url: "https://convertit.app/blog/pdf-to-word-alternative",
+    url: "https://convertmyfiles.com/blog/pdf-to-word-alternative",
   },
 };
 

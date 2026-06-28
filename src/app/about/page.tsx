@@ -44,9 +44,7 @@ export default function AboutPage() {
           <div>
             <h2 className="text-lg font-semibold text-heading mb-2">How it works</h2>
             <p className="text-sm text-body leading-relaxed">
-              When you load a file onto Convertmyfiles, the conversion happens locally in your browser memory. 
-              We utilize high-performance modern web technologies like <strong>WebAssembly (WASM)</strong> to run client-side ports of FFmpeg for audio/video, the Canvas API for image transcoding, and PDFJS/pdf-lib for documents. 
-              No files are ever uploaded or transmitted across the internet.
+              Convertmyfiles utilizes high-performance modern web technologies like <strong>WebAssembly (WASM)</strong> to run client-side ports of FFmpeg for audio/video, the Canvas API for image transcoding, and pdf-lib for local PDF modifications directly in your browser. For document conversions requiring external layout engines (such as DOCX to PDF, PDF to Word, or EPUB to PDF), files are securely processed in-memory via our transient serverless APIs and never written to disk.
             </p>
           </div>
         </div>
@@ -74,8 +72,8 @@ export default function AboutPage() {
             <h2 className="text-lg font-semibold text-heading mb-2">Our commitment to privacy</h2>
             <p className="text-sm text-body leading-relaxed">
               We do not collect your files, store your logs, or track your document conversions. 
-              There are no user accounts to create, no registration forms, and no server databases. 
-              Everything starts and finishes on your local device. Once you close the browser tab, your file cache is automatically wiped clean by the browser.
+              There are no user accounts to create, no registration forms, and no database tracking. 
+              Local files stay on your device, and API files are processed purely in-memory and immediately destroyed. Once you close the tab, all session caches are wiped clean.
             </p>
           </div>
         </div>

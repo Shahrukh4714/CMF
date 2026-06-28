@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -9,12 +9,12 @@ export const metadata: Metadata = {
     title: "How to Compress Image Size for Free Without Losing Quality | Convertmyfiles Blog",
     description:
       "Learn how to compress image size for free. Reduce JPEG, PNG, and WebP file sizes instantly — no uploads, no accounts, and your files never leave your device.",
-    url: "https://convertit.app/blog/compress-image-free-guide",
+    url: "https://convertmyfiles.com/blog/compress-image-free-guide",
     siteName: "Convertmyfiles",
     type: "article",
     images: [
       {
-        url: "https://convertit.app/og/compress-image-free-guide.png",
+        url: "https://convertmyfiles.com/og/compress-image-free-guide.png",
         width: 1200,
         height: 630,
         alt: "How to compress image size for free",

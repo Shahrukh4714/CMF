@@ -1,7 +1,10 @@
+const urlParams = new URLSearchParams(self.location.search);
+const VERSION = urlParams.get('v') || 'v2';
+
 const CACHE = {
-  static: 'cmf-static-v2',
-  pages: 'cmf-pages-v2',
-  wasm: 'cmf-wasm-v2',
+  static: `cmf-static-${VERSION}`,
+  pages: `cmf-pages-${VERSION}`,
+  wasm: `cmf-wasm-${VERSION}`,
 };
 
 const STATIC_ASSETS = [
@@ -25,7 +28,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k.startsWith('cmf-') && !CACHE[k.replace('cmf-', '')])
+          .filter((k) => k.startsWith('cmf-') && !Object.values(CACHE).includes(k))
           .map((k) => caches.delete(k))
       )
     )

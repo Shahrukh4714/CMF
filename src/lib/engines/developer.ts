@@ -104,7 +104,21 @@ async function generateHash(text: string, algorithm: "MD5" | "SHA-1" | "SHA-256"
 async function convertHash(file: File, algorithm: string): Promise<ConversionResult> {
   const text = await file.text();
   const baseName = file.name.replace(/\.[^.]+$/, "");
-  const hash = await generateHash(text, algorithm as any);
+
+  const algoUpper = algorithm.toUpperCase();
+  const validAlgorithms: Record<string, "MD5" | "SHA-1" | "SHA-256" | "SHA-512"> = {
+    "MD5": "MD5",
+    "SHA-1": "SHA-1",
+    "SHA-256": "SHA-256",
+    "SHA-512": "SHA-512",
+  };
+
+  const resolvedAlgo = validAlgorithms[algoUpper];
+  if (!resolvedAlgo) {
+    throw new Error(`Unsupported hash algorithm: ${algorithm}`);
+  }
+
+  const hash = await generateHash(text, resolvedAlgo);
   return {
     blob: new Blob([hash], { type: "text/plain" }),
     filename: `${baseName}_${algorithm.toLowerCase().replace("-", "")}.txt`,

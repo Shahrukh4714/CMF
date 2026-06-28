@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "HEIC to JPG Converter: Convert iPhone Photos Free in Any Browser",
     description:
       "Learn how to convert HEIC photos from iPhone to JPG on Windows, Mac, or any browser — no software needed. Your files never leave your device.",
-    url: "https://convertit.app/blog/heic-to-jpg-converter-guide",
+    url: "https://convertmyfiles.com/blog/heic-to-jpg-converter-guide",
     siteName: "Convertmyfiles",
     type: "article",
   },

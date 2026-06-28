@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "How to Compress a PDF for Free Without Losing Quality | Convertmyfiles Blog",
     description:
       "Learn how to compress a PDF for free and reduce file size without sacrificing quality. No uploads needed — everything runs in your browser.",
-    url: "https://convertit.app/blog/how-to-compress-pdf-free",
+    url: "https://convertmyfiles.com/blog/how-to-compress-pdf-free",
     siteName: "Convertmyfiles",
     type: "article",
   },

@@ -1,5 +1,3 @@
-"use client";
-
 export interface ErrorLogEntry {
   timestamp: string;
   message: string;

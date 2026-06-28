@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "PNG to PDF Converter Free — No Uploads Needed | Convertmyfiles Blog",
     description:
       "Learn how to convert PNG images to PDF for free, right in your browser. Combine scans, prep files for email, and print with ease — no uploads, no sign-up.",
-    url: "https://convertit.app/blog/png-to-pdf-guide",
+    url: "https://convertmyfiles.com/blog/png-to-pdf-guide",
     siteName: "Convertmyfiles",
     type: "article",
   },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { DAILY_LIMIT } from "@/lib/limits";
 import { 
   FileImage, 
   FileVideo, 
@@ -22,8 +23,6 @@ import {
 } from "lucide-react";
 import { engineRegistry, preloadFFmpeg, getFFmpegStatus } from "@/lib/converters";
 import { PricingModal } from "./PricingModal";
-
-const MAX_FREE = 100;
 
 const FMT: Record<string, { cat: string; out: string[] }> = {
   // video
@@ -103,8 +102,8 @@ export function HomeConverter() {
   const [convertingAll, setConvertingAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const used = Math.min(convDone, MAX_FREE);
-  const rem = Math.max(0, MAX_FREE - convDone);
+  const used = Math.min(convDone, DAILY_LIMIT);
+  const rem = Math.max(0, DAILY_LIMIT - convDone);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -179,7 +178,7 @@ export function HomeConverter() {
   const convertAll = async () => {
     if (convertingAll) return;
     
-    if (convDone >= MAX_FREE) {
+    if (convDone >= DAILY_LIMIT) {
       setShowPricing(true);
       return;
     }
@@ -344,7 +343,7 @@ export function HomeConverter() {
               letterSpacing: "0.02em",
               lineHeight: 1.2
             }}>
-              {rem} / {MAX_FREE}
+              {rem} / {DAILY_LIMIT}
             </span>
           </div>
           
@@ -359,7 +358,7 @@ export function HomeConverter() {
               position: "relative" 
             }}>
               <div style={{ 
-                width: `${(used / MAX_FREE) * 100}%`, 
+                width: `${(used / DAILY_LIMIT) * 100}%`, 
                 height: "100%", 
                 background: "linear-gradient(90deg, #5D5FEF 0%, #8B5CF6 100%)", 
                 borderRadius: 3,

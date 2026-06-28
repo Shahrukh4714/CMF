@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "SVG to PNG Converter: A Complete How-To Guide | Convertmyfiles Blog",
     description:
       "Learn when and why to convert SVG to PNG, how resolution and DPI work, and how to do it instantly in your browser — no uploads, no installs.",
-    url: "https://convertit.app/blog/svg-to-png-guide",
+    url: "https://convertmyfiles.com/blog/svg-to-png-guide",
     siteName: "Convertmyfiles",
     type: "article",
   },

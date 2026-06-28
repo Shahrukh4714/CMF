@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "DOCX to PDF Converter Free — No Microsoft Office Needed | Convertmyfiles Blog",
     description:
       "Convert Word documents to PDF for free, right in your browser. No Office install, no uploads — your files never leave your device.",
-    url: "https://convertit.app/blog/docx-to-pdf-guide",
+    url: "https://convertmyfiles.com/blog/docx-to-pdf-guide",
     siteName: "Convertmyfiles",
     type: "article",
     publishedTime: "2026-06-27T00:00:00.000Z",

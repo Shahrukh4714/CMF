@@ -8,8 +8,9 @@ export function ServiceWorkerRegister() {
 
     // Use a delay or wait for window.load to avoid blocking the main thread
     const register = () => {
+      const buildId = process.env.NEXT_PUBLIC_BUILD_ID || "v2";
       navigator.serviceWorker
-        .register("/sw.js")
+        .register(`/sw.js?v=${buildId}`)
         .then((reg) => {
           reg.onupdatefound = () => {
             const installing = reg.installing;

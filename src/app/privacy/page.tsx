@@ -63,20 +63,16 @@ export default function PrivacyPage() {
           <h2 className="text-base font-semibold text-heading mb-3">In Plain English</h2>
           <div className="space-y-3 text-sm text-body leading-relaxed">
             <p>
-              Convertmyfiles runs entirely in your web browser. When you select a file
-              to convert, it is read into your browser&apos;s memory, processed using
-              client-side technologies, and the result is made available for
-              download. At no point is any data transmitted over the network.
+              Convertmyfiles operates on a local-first architecture. The vast majority of conversions—including all images, audio files, videos, and standard PDF operations (merging, splitting, page removal, and page numbering)—happen entirely on your own computer inside your browser memory. For these formats, no data is ever transmitted across the internet.
             </p>
             <p>
-              We do not use cookies, analytics services, or third-party scripts
-              that could collect information about you. There are no accounts,
-              no logins, and no databases.
+              For certain document-to-document conversions that require server-side rendering libraries (such as DOCX to PDF, PDF to Word, EPUB to PDF, and spreadsheet exports), the file is sent securely to our serverless API endpoint. These files are processed entirely in-memory, are never written to persistent disk storage, are never stored or logged, and are immediately destroyed once the conversion is completed and sent back to you.
             </p>
             <p>
-              We believe online tools should be private by default - no fine
-              print, no hidden clauses, just a tool that works entirely on your
-              terms.
+              We do not use cookies, analytics tracking services, or third-party profiling scripts. There are no accounts, no user logins, and no persistent databases.
+            </p>
+            <p>
+              We believe online tools should be private by default - no fine print, no hidden clauses, just a tool that works entirely on your terms.
             </p>
             <p className="text-xs pt-3 border-t border-border-default">
               Last updated: June 2026

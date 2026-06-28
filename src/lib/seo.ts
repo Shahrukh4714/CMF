@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ToolDefinition, ToolCategory, ToolFaqEntry } from "@/data/tools";
 
-export const SITE_URL = "https://convertit.app";
+export const SITE_URL = "https://convertmyfiles.com";
 export const SITE_NAME = "Convertmyfiles";
 export const DEFAULT_OG_IMAGE = "/og-image.svg";
 export const TWITTER_HANDLE = "@convertmyfiles";

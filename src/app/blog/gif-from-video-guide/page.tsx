@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "How to Make a GIF from a Video (Free & Easy) | Convertmyfiles Blog",
     description:
       "Learn how to make a GIF from a video in seconds — no software needed. Perfect for memes, tutorials, and social media. Your files never leave your device.",
-    url: "https://convertit.app/blog/gif-from-video-guide",
+    url: "https://convertmyfiles.com/blog/gif-from-video-guide",
     siteName: "Convertmyfiles",
     type: "article",
   },
@@ -135,7 +135,7 @@ export default function GifFromVideoGuidePage() {
           <li>
             <span className="font-medium">Open the tool.</span> Head to{" "}
             <Link href="/convert/video-to-gif" className="text-fg-brand underline underline-offset-2 hover:opacity-80 transition-opacity">
-              convertit.app/convert/video-to-gif
+              convertmyfiles.com/convert/video-to-gif
             </Link>
             .
           </li>

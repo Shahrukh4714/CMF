@@ -5,7 +5,7 @@ import { Download, Check, X, Settings, Shield } from "lucide-react";
 import { Button } from "./ui/Button";
 import { cn, formatFileSize, downloadBlob } from "@/lib/utils";
 import { engineRegistry, convertImage, preloadFFmpeg, getFFmpegStatus } from "@/lib/converters";
-import type { ConversionResult } from "@/lib/converters";
+import type { ConversionResult, ConversionOptions } from "@/lib/converters";
 import type { ToolDefinition } from "@/data/tools";
 import { trackError } from "@/lib/telemetry";
 
@@ -74,7 +74,7 @@ export function ConverterUI({ tool }: { tool: ToolDefinition }) {
       const engine = engineRegistry.get(tool.engine);
       let result: ConversionResult;
       
-      const convOptions: any = {
+      const convOptions: ConversionOptions = {
         action: outFmt,
         toolSlug: tool.slug,
         onProgress: (p: number) => setProgress(Math.round(p * 100)),

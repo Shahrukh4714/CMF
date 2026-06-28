@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { DAILY_LIMIT } from "./limits";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -65,7 +66,6 @@ export function delay(ms: number): Promise<void> {
 // ── Daily conversion limit ──
 
 const USAGE_KEY = "convertit_usage_today";
-const DAILY_LIMIT = 5;
 
 export function getDailyUsage(): number {
   if (typeof window === "undefined") return 0;
